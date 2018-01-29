@@ -8,9 +8,10 @@
 
 import UIKit
 
-class BusinessesViewController: UIViewController,UITableViewDataSource,UITableViewDelegate {
+class BusinessesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
     
     var businesses: [Business]!
+    var filteredBusiness : [Business]!
      var searchBar = UISearchBar()
     var searchController = UISearchController()
     
@@ -27,6 +28,7 @@ class BusinessesViewController: UIViewController,UITableViewDataSource,UITableVi
        
         searchBar.sizeToFit()
         navigationItem.titleView = searchBar
+        searchBar.delegate = self
 //        searchDisplayController?.displaysSearchBarInNavigationBar = true
 //        
 //        searchController.searchBar.sizeToFit()
@@ -38,8 +40,9 @@ class BusinessesViewController: UIViewController,UITableViewDataSource,UITableVi
         
         
         Business.searchWithTerm(term: "Thai", completion: { (businesses: [Business]?, error: Error?) -> Void in
-            
+        
             self.businesses = businesses
+            self.filteredBusiness = self.businesses
             self.tableView.reloadData()
             if let businesses = businesses {
                 
@@ -54,8 +57,8 @@ class BusinessesViewController: UIViewController,UITableViewDataSource,UITableVi
     }
         func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
             
-            if businesses != nil{
-                return businesses!.count
+            if filteredBusiness != nil{
+                return filteredBusiness!.count
             }else{
                 return 0
             }
@@ -67,7 +70,7 @@ class BusinessesViewController: UIViewController,UITableViewDataSource,UITableVi
             
             let cell = tableView.dequeueReusableCell(withIdentifier: "BusinessCell", for: indexPath) as! BusinessCell
             
-            cell.business = businesses[indexPath.row]
+            cell.business = filteredBusiness[indexPath.row]
             
             return cell
             
@@ -89,6 +92,17 @@ class BusinessesViewController: UIViewController,UITableViewDataSource,UITableVi
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String){
+        print(searchText)
+            filteredBusiness = searchText.isEmpty ? businesses : businesses.filter({(business: Business) -> Bool in
+                return business.name?.range(of: searchText) != nil
+            })
+            
+            tableView.reloadData()
+       
+        
     }
     
     /*
